@@ -14,6 +14,15 @@ import AVFoundation
 
 class ViewController: UIViewController,UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     
+    @IBOutlet weak var FirstCloth: UIImageView!
+    
+    @IBOutlet weak var SecondCloth: UIImageView!
+    
+    @IBOutlet weak var ThirdCloth: UIImageView!
+    
+    
+    @IBOutlet weak var ClothType: UILabel!
+    
     // セッション.
     var mySession : AVCaptureSession!
     // デバイス.
@@ -24,6 +33,8 @@ class ViewController: UIViewController,UIImagePickerControllerDelegate, UINaviga
     
    
     override func viewDidLoad() {
+        
+
         super.viewDidLoad()
             }
     
@@ -136,8 +147,9 @@ class ViewController: UIViewController,UIImagePickerControllerDelegate, UINaviga
                         }
                     }
                     
-                    // ファイル名: 現在日時.png
-                    let photoName:String = "\(NSDate().description).png"
+                    
+                    // ファイル名: 
+                    let photoName:String = "cloth1.png"
                     let path = (createPath as NSString).appendingPathComponent(photoName)
                     
                     // 保存
@@ -145,6 +157,8 @@ class ViewController: UIViewController,UIImagePickerControllerDelegate, UINaviga
                         try photoData.write(to: URL(fileURLWithPath: path), options: .atomic)
                         // 写真表示
                         print("success")
+                        FirstCloth.image = photo
+
                         
                     }catch{
                         // 保存エラー
@@ -158,6 +172,14 @@ class ViewController: UIViewController,UIImagePickerControllerDelegate, UINaviga
         
         // 写真選択画面を閉じる
         picker.dismiss(animated: true, completion: nil)
+    }
+    
+    
+    @IBAction func Update(_ sender: Any) {
+        let appDelegate:AppDelegate = UIApplication.shared.delegate as! AppDelegate //AppDelegateのインスタンスを取得
+        var message = appDelegate.message
+        ClothType.text = message
+
     }
 
     
