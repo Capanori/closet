@@ -7,110 +7,21 @@
 //
 
 import UIKit
-import Photos
 import AVFoundation
 
 
 
-class ViewController: UIViewController,UIImagePickerControllerDelegate, UINavigationControllerDelegate {
-    
-    @IBOutlet weak var FirstCloth: UIImageView!
-    
-    @IBOutlet weak var SecondCloth: UIImageView!
-    
-    @IBOutlet weak var ThirdCloth: UIImageView!
+class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate{
     
     
     @IBOutlet weak var ClothType: UILabel!
     
-    // セッション.
-    var mySession : AVCaptureSession!
-    // デバイス.
-    var myDevice : AVCaptureDevice!
-    // 画像のアウトプット.
-    var myImageOutput: AVCaptureStillImageOutput!
     
+    @IBOutlet weak var Clothimg: UIImageView!
     
    
-    override func viewDidLoad() {
-        
-
-        super.viewDidLoad()
-            }
-    
-    @IBAction func Cammera(_ sender: Any) {
-        // セッションの作成.
-        mySession = AVCaptureSession()
-        
-        // デバイス一覧の取得.
-        let devices = AVCaptureDevice.devices()
-        
-        // バックカメラをmyDeviceに格納.
-        for device in devices! {
-            if((device as AnyObject).position == AVCaptureDevicePosition.back){
-                myDevice = device as! AVCaptureDevice
-            }
-        }
-        
-        // バックカメラからVideoInputを取得.
-        let videoInput = try! AVCaptureDeviceInput.init(device: myDevice)
-        // セッションに追加.
-        mySession.addInput(videoInput)
-        
-        // 出力先を生成.
-        myImageOutput = AVCaptureStillImageOutput()
-        
-        // セッションに追加.
-        mySession.addOutput(myImageOutput)
-        
-        // 画像を表示するレイヤーを生成.
-        let myVideoLayer = AVCaptureVideoPreviewLayer.init(session: mySession)
-        myVideoLayer?.frame = self.view.bounds
-        myVideoLayer?.videoGravity = AVLayerVideoGravityResizeAspectFill
-        
-        // Viewに追加.
-        self.view.layer.addSublayer(myVideoLayer!)
-        
-        // セッション開始.
-        mySession.startRunning()
-        
-        // UIボタンを作成.
-        let myButton = UIButton(frame: CGRect(x: 0, y: 0, width: 120, height: 50))
-        myButton.backgroundColor = UIColor.red
-        myButton.layer.masksToBounds = true
-        myButton.setTitle("撮影", for: .normal)
-        myButton.layer.cornerRadius = 20.0
-        myButton.layer.position = CGPoint(x: self.view.bounds.width/2, y:self.view.bounds.height-50)
-        myButton.addTarget(self, action: #selector(onClickMyButton), for: .touchUpInside)
-        
-        // UIボタンをViewに追加.
-        self.view.addSubview(myButton);
-    }
-    // ボタンイベント.
-    func onClickMyButton(sender: UIButton){
-        
-        // ビデオ出力に接続.
-        // let myVideoConnection = myImageOutput.connectionWithMediaType(AVMediaTypeVideo)
-        let myVideoConnection = myImageOutput.connection(withMediaType: AVMediaTypeVideo)
-        
-        // 接続から画像を取得.
-        self.myImageOutput.captureStillImageAsynchronously(from: myVideoConnection, completionHandler: {(imageDataBuffer, error) in
-            if let e = error {
-                print(e.localizedDescription)
-                return
-            }
-            // 取得したImageのDataBufferをJpegに変換.
-            let myImageData = AVCapturePhotoOutput.jpegPhotoDataRepresentation(forJPEGSampleBuffer: imageDataBuffer!, previewPhotoSampleBuffer: nil)
-            // JpegからUIIMageを作成.
-            let myImage = UIImage(data: myImageData!)
-            // アルバムに追加.
-            UIImageWriteToSavedPhotosAlbum(myImage!, nil, nil, nil)
-        })
-        
-        self.dismiss(animated: true, completion: nil);
-    }
-    
     @IBAction func Album(_ sender: Any) {
+        
         // フォトライブラリが使用可能か？
         if UIImagePickerController.isSourceTypeAvailable(UIImagePickerControllerSourceType.photoLibrary) {
             
@@ -121,7 +32,7 @@ class ViewController: UIViewController,UIImagePickerControllerDelegate, UINaviga
             self.present(picker, animated: true, completion: nil)
         }
     }
-    // 写真選択時に呼ばれる
+    //写真選択時に呼ばれる
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : AnyObject]) {
         picker.dismiss(animated: true, completion: nil)
         
@@ -148,7 +59,7 @@ class ViewController: UIViewController,UIImagePickerControllerDelegate, UINaviga
                     }
                     
                     
-                    // ファイル名: 
+                    // ファイル名:
                     let photoName:String = "cloth1.png"
                     let path = (createPath as NSString).appendingPathComponent(photoName)
                     
@@ -157,8 +68,9 @@ class ViewController: UIViewController,UIImagePickerControllerDelegate, UINaviga
                         try photoData.write(to: URL(fileURLWithPath: path), options: .atomic)
                         // 写真表示
                         print("success")
-                        FirstCloth.image = photo
-
+                        let appDelegate:AppDelegate = UIApplication.shared.delegate as! AppDelegate //AppDelegateのインスタンスを取得
+                        appDelegate.image = photo //appDelegateの変数を操作
+                        
                         
                     }catch{
                         // 保存エラー
@@ -172,13 +84,50 @@ class ViewController: UIViewController,UIImagePickerControllerDelegate, UINaviga
         
         // 写真選択画面を閉じる
         picker.dismiss(animated: true, completion: nil)
+        
+
+        
+        
+    }
+    override func viewDidLoad() {
+        
+
+        super.viewDidLoad()
+            }
+    
+    @IBAction func Line(_ sender: Any) {
+        print("aaaa")
+        let appDelegate:AppDelegate = UIApplication.shared.delegate as! AppDelegate //AppDelegateのインスタンスを取得
+
+        let sendImage: UIImage =  appDelegate.image!
+        let pasteBoard = UIPasteboard.general
+        pasteBoard.setData(UIImagePNGRepresentation(sendImage)!, forPasteboardType: "public.png")
+        let urlString = NSString(format: "line://msg/image/%@", pasteBoard.name as CVarArg)
+        if UIApplication.shared.canOpenURL(NSURL(string: urlString as String)! as URL) {
+            UIApplication.shared.openURL(NSURL(string: urlString as String)! as URL)
+        } else {
+            // - LINEがインストールされていない場合の処理
+        }
+        
+        
+        
     }
     
     
     @IBAction func Update(_ sender: Any) {
         let appDelegate:AppDelegate = UIApplication.shared.delegate as! AppDelegate //AppDelegateのインスタンスを取得
         var message = appDelegate.message
+        var image = appDelegate.image
+
+        
         ClothType.text = message
+        
+        
+        
+        
+        
+        Clothimg.image = image
+
 
     }
 
